@@ -1,3 +1,5 @@
+port module Main exposing (..)
+
 import Html exposing (..)
 import Html.Events exposing (onClick)
 import Html.App as Html
@@ -10,7 +12,7 @@ type alias Model =
   }
 
 
-type Msg = Increment | Decrement
+type Msg = Increment | Decrement | NoOp
 
 
 initialModel : Model
@@ -21,19 +23,25 @@ initialModel =
   }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
     Increment ->
-      { model
-        | count = model.count + 1
-        , increment = model.increment + 1
-      }
+      ( { model
+          | count = model.count + 1
+          , increment = model.increment + 1
+        }
+      , Cmd.none
+      )
     Decrement ->
-      { model
-        | count = model.count - 1
-        , decrement = model.decrement + 1
-      }
+      ( { model
+          | count = model.count - 1
+          , decrement = model.decrement + 1
+        }
+      , Cmd.none
+      )
+    NoOp ->
+      ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -48,8 +56,25 @@ view model =
 
 
 main =
-  Html.beginnerProgram
-    { model = initialModel
+  Html.program
+    { init = (initialModel, Cmd.none)
     , view = view
     , update = update
+    , subscriptions = subscriptions
     }
+
+
+subscriptions model =
+  jsMsgs mapJsMsg
+
+
+mapJsMsg : Int -> Msg
+mapJsMsg int =
+  case int of
+    1 ->
+      Increment
+    _ ->
+      NoOp
+
+port foo : String -> Cmd msg
+port jsMsgs : (Int -> msg) -> Sub msg
