@@ -31,7 +31,7 @@ update msg model =
           | count = model.count + 1
           , increment = model.increment + 1
         }
-      , Cmd.none
+      , increment ()
       )
     Decrement ->
       ( { model
@@ -76,5 +76,6 @@ mapJsMsg int =
     _ ->
       NoOp
 
-port foo : String -> Cmd msg
 port jsMsgs : (Int -> msg) -> Sub msg
+
+port increment : () -> Cmd msg
