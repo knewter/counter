@@ -1,42 +1,85 @@
-module Main exposing (..)
+port module Main exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (onClick)
-import Html.App as App
 
 
 type alias Model =
-    Int
+    { count : Int
+    , increment : Int
+    , decrement : Int
+    }
 
 
-type CounterMsg
+type Msg
     = Increment
     | Decrement
+    | NoOp
 
 
-main : Program Never
-main =
-    App.beginnerProgram
-        { model = 0
-        , update = update
-        , view = view
-        }
+initialModel : Model
+initialModel =
+    { count = 0
+    , increment = 0
+    , decrement = 0
+    }
 
 
-update : CounterMsg -> Model -> Model
+mapJsMsg : Int -> Msg
+mapJsMsg int =
+    case int of
+        1 ->
+            Increment
+
+        _ ->
+            NoOp
+
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Decrement ->
-            model - 1
-
         Increment ->
-            model + 1
+            ( { model
+                | count = model.count + 1
+                , increment = model.increment + 1
+              }
+            , Cmd.none
+            )
+
+        Decrement ->
+            ( { model
+                | count = model.count - 1
+                , decrement = model.decrement + 1
+              }
+            , Cmd.none
+            )
+
+        NoOp ->
+            ( model, Cmd.none )
 
 
-view : Model -> Html CounterMsg
+view : Model -> Html Msg
 view model =
     div []
         [ button [ onClick Decrement ] [ text "-" ]
-        , div [] [ text (toString model) ]
+        , div [] [ text (toString model.count) ]
         , button [ onClick Increment ] [ text "+" ]
+        , h3 [] [ text ("- clicked " ++ (toString model.decrement) ++ " times") ]
+        , h3 [] [ text ("+ clicked " ++ (toString model.increment) ++ " times") ]
         ]
+
+
+main =
+    Html.program
+        { init = ( initialModel, Cmd.none )
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+subscriptions model =
+    jsMsgs mapJsMsg
+
+
+port jsMsgs : (Int -> msg) -> Sub msg
