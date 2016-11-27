@@ -43,7 +43,7 @@ update msg model =
                 | count = model.count + 1
                 , increment = model.increment + 1
               }
-            , Cmd.none
+            , increment ()
             )
 
         Decrement ->
@@ -82,4 +82,15 @@ subscriptions model =
     jsMsgs mapJsMsg
 
 
+
+-- INPUT PORTS
+
+
 port jsMsgs : (Int -> msg) -> Sub msg
+
+
+
+-- OUTPUT PORTS
+
+
+port increment : () -> Cmd msg
