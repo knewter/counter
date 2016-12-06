@@ -7908,30 +7908,55 @@ var _elm_lang$html$Html_Events$Options = F2(
 
 var _user$project$Main$initialModel = {count: 0, increment: 0, decrement: 0};
 var _user$project$Main$jsMsgs = _elm_lang$core$Native_Platform.incomingPort('jsMsgs', _elm_lang$core$Json_Decode$int);
+var _user$project$Main$storageInput = _elm_lang$core$Native_Platform.incomingPort('storageInput', _elm_lang$core$Json_Decode$int);
 var _user$project$Main$increment = _elm_lang$core$Native_Platform.outgoingPort(
 	'increment',
 	function (v) {
 		return null;
+	});
+var _user$project$Main$storage = _elm_lang$core$Native_Platform.outgoingPort(
+	'storage',
+	function (v) {
+		return v;
 	});
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'Increment':
+				var newModel = _elm_lang$core$Native_Utils.update(
+					model,
+					{count: model.count + 1, increment: model.increment + 1});
 				return {
 					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{count: model.count + 1, increment: model.increment + 1}),
-					_1: _user$project$Main$increment(
-						{ctor: '_Tuple0'})
+					_0: newModel,
+					_1: _elm_lang$core$Platform_Cmd$batch(
+						{
+							ctor: '::',
+							_0: _user$project$Main$increment(
+								{ctor: '_Tuple0'}),
+							_1: {
+								ctor: '::',
+								_0: _user$project$Main$storage(model.count),
+								_1: {ctor: '[]'}
+							}
+						})
 				};
 			case 'Decrement':
+				var newModel = _elm_lang$core$Native_Utils.update(
+					model,
+					{count: model.count - 1, decrement: model.decrement + 1});
+				return {
+					ctor: '_Tuple2',
+					_0: newModel,
+					_1: _user$project$Main$storage(model.count)
+				};
+			case 'Set':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{count: model.count - 1, decrement: model.decrement + 1}),
+						{count: _p0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			default:
@@ -7943,6 +7968,9 @@ var _user$project$Main$Model = F3(
 		return {count: a, increment: b, decrement: c};
 	});
 var _user$project$Main$NoOp = {ctor: 'NoOp'};
+var _user$project$Main$Set = function (a) {
+	return {ctor: 'Set', _0: a};
+};
 var _user$project$Main$Decrement = {ctor: 'Decrement'};
 var _user$project$Main$Increment = {ctor: 'Increment'};
 var _user$project$Main$mapJsMsg = function ($int) {
@@ -7954,7 +7982,16 @@ var _user$project$Main$mapJsMsg = function ($int) {
 	}
 };
 var _user$project$Main$subscriptions = function (model) {
-	return _user$project$Main$jsMsgs(_user$project$Main$mapJsMsg);
+	return _elm_lang$core$Platform_Sub$batch(
+		{
+			ctor: '::',
+			_0: _user$project$Main$jsMsgs(_user$project$Main$mapJsMsg),
+			_1: {
+				ctor: '::',
+				_0: _user$project$Main$storageInput(_user$project$Main$Set),
+				_1: {ctor: '[]'}
+			}
+		});
 };
 var _user$project$Main$view = function (model) {
 	return A2(
